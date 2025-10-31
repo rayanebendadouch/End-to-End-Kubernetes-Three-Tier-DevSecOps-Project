@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  # --- MongoDB ---
+  mongo:
+    image: mongo:8
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: devsecops_proj
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+
+  # --- Backend API ---
+  backend:
+    image: rayanebendaouch/devsecops_proj:1       # ton image backend déjà buildée
+    container_name: devsecops_backend
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      MONGO_CONN_STR: mongodb://root:root@mongo:27017/devsecops_proj?authSource=admin
+      USE_DB_AUTH: true
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: root
+
+    ports:
+      - "3500:3500"
+
+  # --- Frontend (React + Nginx) ---
+  frontend:
+    image: rayanebendaouch/devsecops_proj_f:1       # ton image frontend déjà buildée
+    container_name: devsecops_frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"
+
+volumes:
+  mongo_data:
