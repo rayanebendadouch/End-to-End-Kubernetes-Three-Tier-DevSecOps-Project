@@ -1,30 +1,26 @@
-# Copy dependency files and install
-FROM node:20-alpine
+FROM node:25-alpine3.21 AS build
 
-# Set working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
+RUN npm install --omit=dev
 
-RUN npm install
-
-# Copy application source
 COPY . .
 
-# Create non-root user with specific UID/GID (1000)
-RUN addgroup appgroup && adduser -G appgroup -D appuser
 
-RUN mkdir /log
-# Fix ownership for app directory
-RUN chown -R appuser:appgroup /usr/src/app
-# Switch to non-root user
+# no "npm run build" for backend apps
+# ---- Stage 2: Run ----
+FROM node:25-alpine3.21
+
+RUN addgroup -S appgroup -g 1001 && adduser -S appuser -G appgroup -u 1001
+
+WORKDIR /app
+
+COPY --from=build --chown=appuser:appgroup /app ./app
+
 USER appuser
 
-# Set environment
-#ENV NODE_ENV=production
+EXPOSE 5000
 
-# Expose app port
-EXPOSE 3500
 
-# Use read-only filesystem (enforced in K8s)
-CMD ["node", "index.js"]
+CMD ["node", "app/index.js"]

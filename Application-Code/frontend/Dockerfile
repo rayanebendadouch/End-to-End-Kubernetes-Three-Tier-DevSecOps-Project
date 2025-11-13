@@ -1,21 +1,31 @@
-FROM node:20-alpine AS build
+FROM node:20.19.5-alpine3.22 AS builder
 
-WORKDIR /usr/src/app
 
-COPY package*.json ./
-RUN npm install
 
-COPY . .
+WORKDIR /app
+
+
+# Copy all packages
+COPY  . .
 
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
+
+# Install all workspace dependencies from root
+RUN npm install
+
+
 RUN npm run build
 
-# Stage 2: Serve with Nginx
-FROM nginx:stable-alpine
+# Production stage
+FROM nginxinc/nginx-unprivileged:alpine3.22-slim
 
-# Copy build output to Nginx's public directory
-COPY --from=build /usr/src/app/build /usr/share/nginx/html
+# Copy the built frontend from builder stage
+COPY --from=builder /app/build /usr/share/nginx/html
 
-EXPOSE 80
+# Create nginx config for SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
