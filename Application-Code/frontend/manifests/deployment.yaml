@@ -21,7 +21,7 @@ spec:
         runAsGroup: 101
       containers:
         - name: frontend
-          image: rayanebendaouch/pi_front_img:1
+          image: rayanebendaouch/pi_front_img:3
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
