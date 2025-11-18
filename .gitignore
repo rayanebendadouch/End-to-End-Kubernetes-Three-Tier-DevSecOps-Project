@@ -1,1 +1,7 @@
 *.env
+
+Infrastructure/terraform/kubeconfig
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+**/ansible-env
