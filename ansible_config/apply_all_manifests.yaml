@@ -33,3 +33,19 @@
         namespace: default
       loop: "{{ lookup('fileglob', base ~ '/frontend/*.yaml', wantlist=True) }}"
 
+    - name: Apply cluster-issuer
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        src: "{{ item }}"
+        namespace: default
+      loop: "{{ lookup('fileglob', base ~ '/cluster-issuer/*.yaml', wantlist=True) }}"
+
+    - name: Apply frontend-backend-ingress
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        src: "{{ item }}"
+        namespace: default
+      loop: "{{ lookup('fileglob', base ~ '/ingress/*.yaml', wantlist=True) }}"
+
