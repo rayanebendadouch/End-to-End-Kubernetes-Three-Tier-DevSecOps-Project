@@ -1,0 +1,35 @@
+- name: Apply all Kubernetes manifests
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    kubeconfig: ../Infrastructure/terraform/kubeconfig
+    base: "../k8s_manifests"
+
+  tasks:
+
+    - name: Apply database
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        src: "{{ item }}"
+        namespace: default
+      loop: "{{ lookup('fileglob', base ~ '/database/*.yaml', wantlist=True) }}"
+
+    - name: Apply backend
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        src: "{{ item }}"
+        namespace: default
+      loop: "{{ lookup('fileglob', base ~ '/backend/*.yaml', wantlist=True) }}"
+
+    - name: Apply frontend
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        src: "{{ item }}"
+        namespace: default
+      loop: "{{ lookup('fileglob', base ~ '/frontend/*.yaml', wantlist=True) }}"
+
